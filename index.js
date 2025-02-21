@@ -11,14 +11,14 @@ app.use(express.static('dist'))
 app.use(express.json())
 
 // logging
-morgan.token('data', (req, res) => {
+morgan.token('data', (req) => {
   return JSON.stringify(req.body)
 })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms', {
-  skip: function (req, res) { return req.method === 'POST' }
+  skip: function (req) { return req.method === 'POST' }
 }))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data', {
-  skip: function(req, res) { return req.method !== 'POST'}
+  skip: function(req) { return req.method !== 'POST'}
 }))
 
 // endpoints
@@ -47,7 +47,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
@@ -75,8 +75,8 @@ app.put('/api/persons/:id', (request, response, next) => {
   }
 
   Person.findByIdAndUpdate(
-    request.params.id, 
-    person, 
+    request.params.id,
+    person,
     { new: true, runValidators: true, context: 'query' }
   )
     .then(updatedPerson => {
@@ -98,7 +98,7 @@ const errorHandler = (error, request, response, next) => {
   console.log('ERROR NAME:', error.name)
 
   if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id'})
+    return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
   }
